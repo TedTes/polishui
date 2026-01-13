@@ -1,5 +1,5 @@
 {
-  "name": "appstore-screenshot-generator",
+  "name": "polishui",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -11,11 +11,11 @@
     "test:watch": "jest --watch"
   },
   "dependencies": {
+    "jszip": "^3.10.1",
     "next": "14.2.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "sharp": "^0.33.2",
-    "jszip": "^3.10.1"
+    "sharp": "^0.33.2"
   },
   "devDependencies": {
     "@types/node": "^20.11.0",

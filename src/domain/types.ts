@@ -4,6 +4,10 @@
  * Core business entities and interfaces.
  * Framework-independent, pure TypeScript.
  * 
+ * Design Principles:
+ * - Single Responsibility: Each type represents one concept
+ * - Open/Closed: Extensible for new locales, devices, templates
+ * - Interface Segregation: Small, focused interfaces
  */
 
 // ============================================================================
@@ -12,6 +16,7 @@
 
 /**
  * Supported locales for screenshot copy generation.
+ * MVP: en-US only, but structure allows easy addition of new locales.
  */
 export type Locale = 'en-US';
 
@@ -37,6 +42,8 @@ export type Orientation = 'portrait' | 'landscape';
 
 /**
  * Device target specification with exact pixel dimensions.
+ * Follows Open/Closed principle: new targets can be added to DEVICE_TARGETS
+ * constant without modifying this interface.
  */
 export interface DeviceTarget {
   /** Unique identifier for this device target (e.g., 'iphone-6.7') */

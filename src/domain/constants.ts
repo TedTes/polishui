@@ -2,7 +2,11 @@
  * Domain Constants
  * 
  * Single source of truth for device targets, dimensions, and constraints.
-
+ * 
+ * Design Principles:
+ * - Determinism: Fixed constants ensure same output for same input
+ * - No Hallucination: Only Apple-specified pixel sizes are included
+ * - Open/Closed: New targets can be added without modifying core logic
  */
 
 import { DeviceTarget, Locale } from './types';
@@ -17,8 +21,8 @@ import { DeviceTarget, Locale } from './types';
  * MVP: 2 targets (iPhone 6.7" and iPad Pro 12.9")
  * These are the exact pixel dimensions required by App Store Connect.
  * 
- * TODO: These dimensions are hardcoded per requirements.
- *  compliance with other Apple sizes without verification.
+ * IMPORTANT: These dimensions are hardcoded per requirements.
+ * Do NOT claim compliance with other Apple sizes without verification.
  */
 export const DEVICE_TARGETS: readonly DeviceTarget[] = [
   {
