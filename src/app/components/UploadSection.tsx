@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback } from 'react';
+import { useCallback, useEffect, useMemo } from 'react';
 
 interface UploadSectionProps {
   screenshots: File[];
@@ -8,21 +8,44 @@ interface UploadSectionProps {
   onScreenshotsChange: (files: File[]) => void;
 }
 
+// Generate stable key for each file
+const fileKey = (file: File) => `${file.name}-${file.size}-${file.lastModified}`;
+
 export function UploadSection({
   screenshots,
   onAddScreenshots,
   onScreenshotsChange,
 }: UploadSectionProps) {
+  // Create preview URLs once per file change
+  const previews = useMemo(() => {
+    return screenshots.map((file) => ({
+      key: fileKey(file),
+      file,
+      url: URL.createObjectURL(file),
+    }));
+  }, [screenshots]);
+
+  // Cleanup: revoke all blob URLs when component unmounts or previews change
+  useEffect(() => {
+    return () => {
+      previews.forEach((p) => URL.revokeObjectURL(p.url));
+    };
+  }, [previews]);
+
   const handleFileChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
+      
       const files = Array.from(e.target.files || []);
+      
       const imageFiles = files.filter((file) => file.type.startsWith('image/'));
+
       onAddScreenshots(imageFiles);
+     
+      
       e.target.value = '';
     },
     [onAddScreenshots]
   );
-
   const handleRemoveScreenshot = (index: number) => {
     const updated = screenshots.filter((_, i) => i !== index);
     onScreenshotsChange(updated);
@@ -85,10 +108,10 @@ export function UploadSection({
       {screenshots.length > 0 && (
         <div className="mt-6">
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
-            {screenshots.map((file, index) => (
-              <div key={index} className="group relative">
+            {previews.map((preview, index) => (
+              <div key={preview.key} className="group relative">
                 <img
-                  src={URL.createObjectURL(file)}
+                  src={preview.url}
                   alt={`Screenshot ${index + 1}`}
                   className="h-32 w-full rounded-xl border border-[var(--border)] object-cover shadow-sm"
                 />

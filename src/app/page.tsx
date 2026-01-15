@@ -2,6 +2,7 @@
 
 import { useCallback, useState } from 'react';
 import { StoryboardPreview, InputForm, UploadSection } from './components';
+
 export default function Home() {
   const [screenshots, setScreenshots] = useState<File[]>([]);
   const [storyboard, setStoryboard] = useState<any>(null);
@@ -10,8 +11,18 @@ export default function Home() {
   const [error, setError] = useState<string | null>(null);
   const [warnings, setWarnings] = useState<string[]>([]);
   
+  // Fixed: Use useCallback without dependencies, ensuring functional update
   const handleAddScreenshots = useCallback((files: File[]) => {
-    setScreenshots((prev) => [...prev, ...files].slice(0, 10));
+    console.log('🔵 handleAddScreenshots called with:', files.length, 'new files');
+    
+    setScreenshots((prev) => {
+      
+      const combined = [...prev, ...files];
+      
+      const result = combined.slice(0, 10);
+      
+      return result;
+    });
   }, []);
   
   const handleScreenshotsChange = useCallback((files: File[]) => {
