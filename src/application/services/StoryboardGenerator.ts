@@ -12,7 +12,6 @@
 import {
     Storyboard,
     Slide,
-    SlideType,
     StoryboardInput,
     SlideText,
     SlideScreenshot,

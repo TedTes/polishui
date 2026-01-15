@@ -1,10 +1,16 @@
 import type { Metadata } from 'next';
-import { Inter } from 'next/font/google';
+import { Manrope, Sora } from 'next/font/google';
 import './globals.css';
 
-const inter = Inter({
+const manrope = Manrope({
   subsets: ['latin'],
-  variable: '--font-inter',
+  variable: '--font-body',
+  display: 'swap',
+});
+
+const sora = Sora({
+  subsets: ['latin'],
+  variable: '--font-display',
   display: 'swap',
 });
 
@@ -20,7 +26,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={`${inter.variable} font-sans antialiased`}>{children}</body>
+      <body className={`${manrope.variable} ${sora.variable} antialiased`}>{children}</body>
     </html>
   );
 }

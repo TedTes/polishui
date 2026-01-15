@@ -3,7 +3,17 @@
 @tailwind utilities;
 
 :root {
-  --font-inter: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-body: 'Manrope', system-ui, -apple-system, sans-serif;
+  --font-display: 'Sora', system-ui, -apple-system, sans-serif;
+  --bg: #f6f1e9;
+  --surface: #ffffff;
+  --surface-muted: #fdf8f1;
+  --ink: #1f2933;
+  --muted: #58606b;
+  --accent: #0f766e;
+  --accent-2: #d97706;
+  --border: #e6dccf;
+  --shadow-soft: 0 14px 40px rgba(15, 23, 42, 0.12);
 }
 
 * {
@@ -19,5 +29,11 @@ body {
 }
 
 body {
-  font-family: var(--font-inter);
+  font-family: var(--font-body);
+  color: var(--ink);
+  background: var(--bg);
+}
+
+.font-display {
+  font-family: var(--font-display);
 }

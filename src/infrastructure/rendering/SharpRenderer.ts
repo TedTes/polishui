@@ -11,7 +11,6 @@
  */
 
 import sharp from 'sharp';
-import path from 'path';
 import {
   THEME,
   getTemplateById,
@@ -25,13 +24,7 @@ import { IImageRenderer, RenderOptions, RenderedImage } from './IImageRenderer';
  * Sharp-based image renderer implementation.
  */
 export class SharpRenderer implements IImageRenderer {
-  private fontsPath: string;
   private ready: boolean = false;
-  
-  constructor() {
-    // Path to bundled fonts
-    this.fontsPath = path.join(process.cwd(), 'public', 'fonts');
-  }
   
   /**
    * Initialize renderer (verify fonts exist).
@@ -170,8 +163,7 @@ export class SharpRenderer implements IImageRenderer {
       .toBuffer();
     
     // Get resized screenshot dimensions
-    const screenshotMeta = await sharp(resizedScreenshot).metadata();
-    const screenshotHeight = screenshotMeta.height || 0;
+    await sharp(resizedScreenshot).metadata();
     
     // Center horizontally
     const screenshotLeft = Math.round((canvasWidth - screenshotWidth) / 2);
@@ -243,7 +235,7 @@ export class SharpRenderer implements IImageRenderer {
       THEME.fontWeights.medium,
       textConfig.align,
       textAreaWidth,
-      THEME.textColors.overlay.secondary
+      THEME.textColors.overlay.primary
     );
     
     // Calculate positions
