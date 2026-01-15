@@ -68,7 +68,7 @@ export function UploadSection({
       </div>
 
       <p className="mt-3 text-sm text-[var(--muted)]">
-        Add 5-10 PNG or JPG screens. We'll use them to build your storyboard.
+        Add 1-10 PNG or JPG screens. We'll use them to generate promo variations.
       </p>
 
       <div className="mt-5">
@@ -130,9 +130,9 @@ export function UploadSection({
         </div>
       )}
 
-      {screenshots.length < 5 && screenshots.length > 0 && (
+      {screenshots.length === 0 && (
         <p className="mt-4 text-sm font-medium text-amber-700">
-          Please upload at least 5 screenshots (you have {screenshots.length})
+          Please upload at least 1 screenshot to begin.
         </p>
       )}
     </div>

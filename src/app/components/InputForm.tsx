@@ -51,7 +51,7 @@ export function InputForm({ onGenerate, isGenerating }: InputFormProps) {
   };
 
   const validBullets = bullets.filter((b) => b.trim().length > 0);
-  const canSubmit = appName.trim().length > 0 && validBullets.length >= 3;
+  const canSubmit = appName.trim().length > 0;
 
   return (
     <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-6 shadow-[var(--shadow-soft)]">
@@ -82,7 +82,7 @@ export function InputForm({ onGenerate, isGenerating }: InputFormProps) {
         {/* Value Bullets */}
         <div>
           <label className="block text-sm font-medium text-[var(--muted)] mb-2">
-            Value Bullets * (3-6 required)
+            Value Bullets (optional)
           </label>
           <div className="space-y-3">
             {bullets.map((bullet, index) => (
@@ -151,7 +151,7 @@ export function InputForm({ onGenerate, isGenerating }: InputFormProps) {
           disabled={!canSubmit || isGenerating}
           className="w-full rounded-full bg-[var(--accent)] px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-emerald-200/60 transition hover:-translate-y-0.5 hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-50 disabled:shadow-none"
         >
-          {isGenerating ? 'Generating...' : 'Generate Storyboard'}
+          {isGenerating ? 'Generating...' : 'Generate Screenshots'}
         </button>
       </form>
     </div>

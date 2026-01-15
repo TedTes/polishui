@@ -10,6 +10,7 @@ export default function Home() {
   const [isExporting, setIsExporting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [warnings, setWarnings] = useState<string[]>([]);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
   
   // Fixed: Use useCallback without dependencies, ensuring functional update
   const handleAddScreenshots = useCallback((files: File[]) => {
@@ -37,6 +38,7 @@ export default function Home() {
     setIsGenerating(true);
     setError(null);
     setWarnings([]);
+    setSuccessMessage(null);
 
     try {
       const formData = new FormData();
@@ -58,12 +60,22 @@ export default function Home() {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to generate storyboard');
+        throw new Error(errorData.error || 'Failed to generate screenshots');
       }
 
-      const result = await response.json();
-      setStoryboard(result.storyboard);
-      setWarnings(result.warnings || []);
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      const safeName = data.appName
+        ? data.appName.replace(/[^a-z0-9]/gi, '_').toLowerCase()
+        : 'app-store';
+      a.download = `${safeName}_promotional_screenshots.zip`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      setSuccessMessage('Your promotional screenshots are ready.');
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -116,6 +128,7 @@ export default function Home() {
     setScreenshots([]);
     setError(null);
     setWarnings([]);
+    setSuccessMessage(null);
   };
 
   return (
@@ -159,6 +172,12 @@ export default function Home() {
           </div>
         )}
 
+        {successMessage && (
+          <div className="mb-8 rounded-2xl border border-emerald-200 bg-emerald-50 px-5 py-4 shadow-sm">
+            <p className="text-sm font-medium text-emerald-900">{successMessage}</p>
+          </div>
+        )}
+
         {!storyboard ? (
           /* Input Phase */
           <div className="grid gap-8 lg:grid-cols-[1.1fr_0.9fr]">
@@ -169,12 +188,12 @@ export default function Home() {
                 onScreenshotsChange={handleScreenshotsChange}
               />
 
-              {screenshots.length >= 5 && (
-                <InputForm
-                  onGenerate={handleGenerate}
-                  isGenerating={isGenerating}
-                />
-              )}
+            {screenshots.length >= 1 && (
+              <InputForm
+                onGenerate={handleGenerate}
+                isGenerating={isGenerating}
+              />
+            )}
             </div>
 
             <aside className="space-y-6">

@@ -7,7 +7,6 @@
 
 import { NextResponse } from 'next/server';
 import { SharpRenderer } from '@/infrastructure/rendering';
-import { LLMCopyGeneratorAdapter } from '@/application/services';
 import { validateTemplateConfiguration, DEVICE_TARGETS } from '@/domain';
 
 export async function GET() {
@@ -20,13 +19,7 @@ export async function GET() {
     await renderer.initialize();
     const rendererReady = await renderer.isReady();
     
-    // Check copy generator
-    const copyGenerator = new LLMCopyGeneratorAdapter({
-      provider: 'openai',
-      apiKey: process.env.OPENAI_API_KEY,
-      model: process.env.OPENAI_MODEL,
-    });
-    const copyGeneratorReady = await copyGenerator.isAvailable();
+    const copyGeneratorReady = !!process.env.OPENAI_API_KEY;
     
     // Gather system info
     const health = {
@@ -34,12 +27,12 @@ export async function GET() {
       timestamp: new Date().toISOString(),
       services: {
         renderer: rendererReady ? 'ready' : 'not ready',
-        copyGenerator: copyGeneratorReady ? 'ready' : 'not ready',
+        copyGenerator: copyGeneratorReady ? 'ready' : 'not configured',
         templates: 'validated',
       },
       config: {
         deviceTargets: DEVICE_TARGETS.length,
-        generatorType: copyGenerator.getName(),
+        generatorType: 'openai-image',
       },
     };
     
