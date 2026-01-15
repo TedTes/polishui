@@ -4,17 +4,23 @@ import { useCallback } from 'react';
 
 interface UploadSectionProps {
   screenshots: File[];
+  onAddScreenshots: (files: File[]) => void;
   onScreenshotsChange: (files: File[]) => void;
 }
 
-export function UploadSection({ screenshots, onScreenshotsChange }: UploadSectionProps) {
+export function UploadSection({
+  screenshots,
+  onAddScreenshots,
+  onScreenshotsChange,
+}: UploadSectionProps) {
   const handleFileChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
       const files = Array.from(e.target.files || []);
       const imageFiles = files.filter((file) => file.type.startsWith('image/'));
-      onScreenshotsChange(imageFiles.slice(0, 10)); // Max 10
+      onAddScreenshots(imageFiles);
+      e.target.value = '';
     },
-    [onScreenshotsChange]
+    [onAddScreenshots]
   );
 
   const handleRemoveScreenshot = (index: number) => {
@@ -23,20 +29,30 @@ export function UploadSection({ screenshots, onScreenshotsChange }: UploadSectio
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-      <h2 className="text-xl font-semibold text-gray-900 mb-4">
-        1. Upload Screenshots
-      </h2>
+    <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-6 shadow-[var(--shadow-soft)]">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--accent)]">
+            Step 1
+          </p>
+          <h2 className="font-display mt-2 text-2xl text-[var(--ink)]">
+            Upload screenshots
+          </h2>
+        </div>
+        <span className="rounded-full border border-[var(--border)] bg-[var(--surface-muted)] px-3 py-1 text-xs font-medium text-[var(--muted)]">
+          {screenshots.length}/10 uploaded
+        </span>
+      </div>
 
-      <p className="text-gray-600 mb-4">
-        Upload 5-10 in-app screenshots (PNG or JPG)
+      <p className="mt-3 text-sm text-[var(--muted)]">
+        Add 5-10 PNG or JPG screens. We'll use them to build your storyboard.
       </p>
 
-      <div className="mb-4">
-        <label className="flex items-center justify-center w-full h-32 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-blue-500 transition-colors">
+      <div className="mt-5">
+        <label className="group flex w-full cursor-pointer items-center justify-center rounded-2xl border border-dashed border-[var(--border)] bg-[var(--surface-muted)] px-6 py-10 transition hover:border-[var(--accent)] hover:bg-white">
           <div className="text-center">
             <svg
-              className="mx-auto h-12 w-12 text-gray-400"
+              className="mx-auto h-10 w-10 text-[var(--muted)] transition group-hover:text-[var(--accent)]"
               stroke="currentColor"
               fill="none"
               viewBox="0 0 48 48"
@@ -49,8 +65,11 @@ export function UploadSection({ screenshots, onScreenshotsChange }: UploadSectio
                 strokeLinejoin="round"
               />
             </svg>
-            <p className="mt-2 text-sm text-gray-600">
+            <p className="mt-3 text-sm font-medium text-[var(--ink)]">
               Click to upload or drag and drop
+            </p>
+            <p className="mt-1 text-xs text-[var(--muted)]">
+              Up to 10 files, 10MB max each
             </p>
           </div>
           <input
@@ -64,25 +83,22 @@ export function UploadSection({ screenshots, onScreenshotsChange }: UploadSectio
       </div>
 
       {screenshots.length > 0 && (
-        <div className="space-y-2">
-          <p className="text-sm font-medium text-gray-700">
-            Uploaded: {screenshots.length}/10
-          </p>
-          <div className="grid grid-cols-5 gap-4">
+        <div className="mt-6">
+          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
             {screenshots.map((file, index) => (
-              <div key={index} className="relative group">
+              <div key={index} className="group relative">
                 <img
                   src={URL.createObjectURL(file)}
                   alt={`Screenshot ${index + 1}`}
-                  className="w-full h-32 object-cover rounded border border-gray-200"
+                  className="h-32 w-full rounded-xl border border-[var(--border)] object-cover shadow-sm"
                 />
                 <button
                   onClick={() => handleRemoveScreenshot(index)}
-                  className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                  className="absolute right-2 top-2 flex h-6 w-6 items-center justify-center rounded-full bg-red-500 text-xs font-semibold text-white opacity-0 transition-opacity group-hover:opacity-100"
                 >
-                  ×
+                  x
                 </button>
-                <div className="absolute bottom-1 left-1 bg-black bg-opacity-50 text-white text-xs px-2 py-1 rounded">
+                <div className="absolute bottom-2 left-2 rounded-full bg-black/60 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-white">
                   #{index + 1}
                 </div>
               </div>
@@ -92,7 +108,7 @@ export function UploadSection({ screenshots, onScreenshotsChange }: UploadSectio
       )}
 
       {screenshots.length < 5 && screenshots.length > 0 && (
-        <p className="mt-4 text-sm text-yellow-700">
+        <p className="mt-4 text-sm font-medium text-amber-700">
           Please upload at least 5 screenshots (you have {screenshots.length})
         </p>
       )}

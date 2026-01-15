@@ -60,9 +60,7 @@ export interface GeneratedCopy {
  * Copy generator interface.
  * 
  * Implementations:
- * - RuleBasedCopyGenerator: Deterministic, no API required (MVP fallback)
- * - AnthropicCopyGenerator: Uses Claude API (future enhancement)
- * - OpenAICopyGenerator: Uses OpenAI API (future enhancement)
+ * - OpenAICopyGenerator: Uses OpenAI API
  */
 export interface ICopyGenerator {
   /**

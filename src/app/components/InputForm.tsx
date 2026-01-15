@@ -54,15 +54,18 @@ export function InputForm({ onGenerate, isGenerating }: InputFormProps) {
   const canSubmit = appName.trim().length > 0 && validBullets.length >= 3;
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-      <h2 className="text-xl font-semibold text-gray-900 mb-4">
-        2. Provide App Details
+    <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-6 shadow-[var(--shadow-soft)]">
+      <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--accent)]">
+        Step 2
+      </p>
+      <h2 className="font-display mt-2 text-2xl text-[var(--ink)]">
+        Provide app details
       </h2>
 
-      <form onSubmit={handleSubmit} className="space-y-6">
+      <form onSubmit={handleSubmit} className="mt-6 space-y-6">
         {/* App Name */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className="block text-sm font-medium text-[var(--muted)] mb-2">
             App Name *
           </label>
           <input
@@ -71,14 +74,14 @@ export function InputForm({ onGenerate, isGenerating }: InputFormProps) {
             onChange={(e) => setAppName(e.target.value)}
             placeholder="e.g., MyAwesomeApp"
             maxLength={50}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="w-full rounded-xl border border-[var(--border)] bg-white px-4 py-2 text-sm text-[var(--ink)] shadow-sm focus:border-[var(--accent)] focus:outline-none focus:ring-2 focus:ring-emerald-200"
             required
           />
         </div>
 
         {/* Value Bullets */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className="block text-sm font-medium text-[var(--muted)] mb-2">
             Value Bullets * (3-6 required)
           </label>
           <div className="space-y-3">
@@ -89,13 +92,13 @@ export function InputForm({ onGenerate, isGenerating }: InputFormProps) {
                   value={bullet}
                   onChange={(e) => handleBulletChange(index, e.target.value)}
                   placeholder={`Feature ${index + 1}`}
-                  className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="flex-1 rounded-xl border border-[var(--border)] bg-white px-4 py-2 text-sm text-[var(--ink)] shadow-sm focus:border-[var(--accent)] focus:outline-none focus:ring-2 focus:ring-emerald-200"
                 />
                 {bullets.length > 3 && (
                   <button
                     type="button"
                     onClick={() => handleRemoveBullet(index)}
-                    className="px-3 py-2 text-red-600 hover:bg-red-50 rounded-lg"
+                    className="rounded-xl px-3 py-2 text-xs font-semibold text-red-600 transition hover:bg-red-50"
                   >
                     Remove
                   </button>
@@ -108,20 +111,20 @@ export function InputForm({ onGenerate, isGenerating }: InputFormProps) {
             <button
               type="button"
               onClick={handleAddBullet}
-              className="mt-3 text-sm text-blue-600 hover:text-blue-700"
+              className="mt-3 text-sm font-semibold text-[var(--accent)] transition hover:text-emerald-700"
             >
               + Add another bullet
             </button>
           )}
 
-          <p className="mt-2 text-sm text-gray-500">
+          <p className="mt-2 text-xs text-[var(--muted)]">
             {validBullets.length}/6 bullets filled
           </p>
         </div>
 
         {/* Brand Color */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className="block text-sm font-medium text-[var(--muted)] mb-2">
             Brand Color (optional)
           </label>
           <div className="flex gap-3 items-center">
@@ -129,7 +132,7 @@ export function InputForm({ onGenerate, isGenerating }: InputFormProps) {
               type="color"
               value={brandColor || '#0ea5e9'}
               onChange={(e) => setBrandColor(e.target.value)}
-              className="h-10 w-20 border border-gray-300 rounded cursor-pointer"
+              className="h-10 w-20 cursor-pointer rounded-lg border border-[var(--border)]"
             />
             <input
               type="text"
@@ -137,7 +140,7 @@ export function InputForm({ onGenerate, isGenerating }: InputFormProps) {
               onChange={(e) => setBrandColor(e.target.value)}
               placeholder="#0ea5e9"
               pattern="^#[0-9A-Fa-f]{6}$"
-              className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="flex-1 rounded-xl border border-[var(--border)] bg-white px-4 py-2 text-sm text-[var(--ink)] shadow-sm focus:border-[var(--accent)] focus:outline-none focus:ring-2 focus:ring-emerald-200"
             />
           </div>
         </div>
@@ -146,7 +149,7 @@ export function InputForm({ onGenerate, isGenerating }: InputFormProps) {
         <button
           type="submit"
           disabled={!canSubmit || isGenerating}
-          className="w-full px-6 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-full rounded-full bg-[var(--accent)] px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-emerald-200/60 transition hover:-translate-y-0.5 hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-50 disabled:shadow-none"
         >
           {isGenerating ? 'Generating...' : 'Generate Storyboard'}
         </button>

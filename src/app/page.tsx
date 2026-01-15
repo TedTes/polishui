@@ -1,7 +1,7 @@
 'use client';
 
-import { useState } from 'react';
-import {StoryboardPreview,InputForm,UploadSection} from "./components";
+import { useCallback, useState } from 'react';
+import { StoryboardPreview, InputForm, UploadSection } from './components';
 export default function Home() {
   const [screenshots, setScreenshots] = useState<File[]>([]);
   const [storyboard, setStoryboard] = useState<any>(null);
@@ -9,6 +9,14 @@ export default function Home() {
   const [isExporting, setIsExporting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [warnings, setWarnings] = useState<string[]>([]);
+  
+  const handleAddScreenshots = useCallback((files: File[]) => {
+    setScreenshots((prev) => [...prev, ...files].slice(0, 10));
+  }, []);
+  
+  const handleScreenshotsChange = useCallback((files: File[]) => {
+    setScreenshots(files);
+  }, []);
 
   const handleGenerate = async (data: {
     appName: string;
@@ -100,30 +108,39 @@ export default function Home() {
   };
 
   return (
-    <main className="min-h-screen bg-gray-50">
-      <div className="max-w-6xl mx-auto px-4 py-8">
+    <main className="relative min-h-screen overflow-hidden">
+      <div className="pointer-events-none absolute -top-32 right-[-10%] h-[420px] w-[420px] rounded-full bg-gradient-to-br from-emerald-200 via-emerald-100 to-transparent blur-3xl opacity-60" />
+      <div className="pointer-events-none absolute bottom-[-140px] left-[-5%] h-[380px] w-[380px] rounded-full bg-gradient-to-br from-amber-200 via-orange-100 to-transparent blur-3xl opacity-70" />
+
+      <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6 lg:px-8">
         {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold text-gray-900 mb-2">
-            App Store Screenshot Generator
+        <div className="mb-10">
+          <div className="inline-flex items-center gap-2 rounded-full border border-[var(--border)] bg-[var(--surface)] px-3 py-1 text-xs font-medium text-[var(--muted)] shadow-sm">
+            <span className="h-2 w-2 rounded-full bg-[var(--accent)]" />
+            GPT-4o-mini powered copy
+          </div>
+          <h1 className="font-display mt-5 text-4xl font-semibold tracking-tight text-[var(--ink)] sm:text-5xl">
+            App Store screenshots that look premium and convert
           </h1>
-          <p className="text-gray-600">
-            Generate professional App Store screenshots in seconds
+          <p className="mt-3 max-w-2xl text-base text-[var(--muted)] sm:text-lg">
+            Upload your best product shots, add a few benefits, and export a polished
+            App Store package in minutes.
           </p>
         </div>
 
         {/* Error Display */}
         {error && (
-          <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
-            <p className="text-red-800">{error}</p>
+          <div className="mb-8 rounded-2xl border border-red-200 bg-red-50 px-5 py-4 shadow-sm">
+            <p className="text-sm font-medium text-red-900">Something went wrong</p>
+            <p className="mt-1 text-sm text-red-700">{error}</p>
           </div>
         )}
 
         {/* Warnings Display */}
         {warnings.length > 0 && (
-          <div className="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-            <p className="font-medium text-yellow-900 mb-2">Warnings:</p>
-            <ul className="list-disc list-inside text-yellow-800 text-sm">
+          <div className="mb-8 rounded-2xl border border-amber-200 bg-amber-50 px-5 py-4 shadow-sm">
+            <p className="text-sm font-medium text-amber-900">Heads up</p>
+            <ul className="mt-2 list-disc list-inside text-sm text-amber-800">
               {warnings.map((warning, i) => (
                 <li key={i}>{warning}</li>
               ))}
@@ -133,18 +150,62 @@ export default function Home() {
 
         {!storyboard ? (
           /* Input Phase */
-          <div className="space-y-8">
-            <UploadSection
-              screenshots={screenshots}
-              onScreenshotsChange={setScreenshots}
-            />
-
-            {screenshots.length >= 5 && (
-              <InputForm
-                onGenerate={handleGenerate}
-                isGenerating={isGenerating}
+          <div className="grid gap-8 lg:grid-cols-[1.1fr_0.9fr]">
+            <div className="space-y-8">
+              <UploadSection
+                screenshots={screenshots}
+                onAddScreenshots={handleAddScreenshots}
+                onScreenshotsChange={handleScreenshotsChange}
               />
-            )}
+
+              {screenshots.length >= 5 && (
+                <InputForm
+                  onGenerate={handleGenerate}
+                  isGenerating={isGenerating}
+                />
+              )}
+            </div>
+
+            <aside className="space-y-6">
+              <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-6 shadow-[var(--shadow-soft)]">
+                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--accent)]">
+                  What you get
+                </p>
+                <h3 className="font-display mt-3 text-2xl text-[var(--ink)]">
+                  A ready-to-upload App Store package
+                </h3>
+                <ul className="mt-4 space-y-3 text-sm text-[var(--muted)]">
+                  <li>10 screenshots sized for iPhone and iPad</li>
+                  <li>Deterministic naming for quick uploads</li>
+                  <li>Manifest with templates, copy, and metadata</li>
+                </ul>
+              </div>
+              <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface-muted)] p-6 shadow-sm">
+                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--accent-2)]">
+                  Workflow
+                </p>
+                <div className="mt-4 space-y-3 text-sm text-[var(--muted)]">
+                  <div className="flex items-start gap-3">
+                    <span className="mt-1 inline-flex h-6 w-6 items-center justify-center rounded-full bg-[var(--surface)] text-xs font-semibold text-[var(--accent)]">
+                      1
+                    </span>
+                    Upload 5-10 screenshots to analyze.
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <span className="mt-1 inline-flex h-6 w-6 items-center justify-center rounded-full bg-[var(--surface)] text-xs font-semibold text-[var(--accent)]">
+                      2
+                    </span>
+                    Add your app name and top benefits.
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <span className="mt-1 inline-flex h-6 w-6 items-center justify-center rounded-full bg-[var(--surface)] text-xs font-semibold text-[var(--accent)]">
+                      3
+                    </span>
+                    Preview slides, then export your ZIP.
+                  </div>
+                </div>
+              </div>
+            </aside>
           </div>
         ) : (
           /* Preview & Export Phase */
@@ -154,18 +215,18 @@ export default function Home() {
               screenshots={screenshots}
             />
 
-            <div className="flex gap-4">
+            <div className="flex flex-wrap gap-4">
               <button
                 onClick={handleExport}
                 disabled={isExporting}
-                className="px-6 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="rounded-full bg-[var(--accent)] px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-emerald-200/60 transition hover:-translate-y-0.5 hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-50 disabled:shadow-none"
               >
                 {isExporting ? 'Exporting...' : 'Export ZIP'}
               </button>
 
               <button
                 onClick={handleReset}
-                className="px-6 py-3 bg-gray-200 text-gray-700 font-medium rounded-lg hover:bg-gray-300"
+                className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-6 py-3 text-sm font-semibold text-[var(--ink)] shadow-sm transition hover:-translate-y-0.5"
               >
                 Start Over
               </button>

@@ -12,18 +12,13 @@ This layer contains application services and use cases.
 
 ### Interfaces
 - `interfaces/ICopyGenerator.ts` - Abstract interface for copy generation
-  - Allows swapping between rule-based, Anthropic, OpenAI implementations
+  - Allows swapping between LLM providers
   - Enforces character limits (headline ≤32, subheadline ≤60)
 
 ### Services
-- `services/RuleBasedCopyGenerator.ts` - Deterministic template-based copy generation
-  - Works without API key (MVP fallback)
-  - Guarantees same input = same output
+- `services/LLMCopyGeneratorAdapter.ts` - LLM provider adapter
+  - OpenAI integration for copy generation
   - Character limit enforcement with smart truncation
-  
-- `services/LLMCopyGeneratorAdapter.ts` - LLM provider adapter (future)
-  - Stub for Anthropic/OpenAI integration
-  - Falls back to rule-based if no API key
 
 - `services/StoryboardGenerator.ts` - Orchestrates storyboard creation
   - Generates exactly 5 slides from user input
@@ -37,9 +32,12 @@ This layer contains application services and use cases.
 
 ### Generate Storyboard
 ```typescript
-import { StoryboardGenerator, RuleBasedCopyGenerator } from '@/application/services';
+import { StoryboardGenerator, LLMCopyGeneratorAdapter } from '@/application/services';
 
-const copyGenerator = new RuleBasedCopyGenerator();
+const copyGenerator = new LLMCopyGeneratorAdapter({
+  provider: 'openai',
+  apiKey: process.env.OPENAI_API_KEY,
+});
 const storyboardGenerator = new StoryboardGenerator(copyGenerator);
 
 const result = await storyboardGenerator.generate({
@@ -86,6 +84,6 @@ const editedStoryboard = storyboardGenerator.updateSlideText(
 
 The StoryboardGenerator follows the **Dependency Inversion Principle**:
 - Depends on `ICopyGenerator` interface (not concrete implementations)
-- Can work with any copy generator (rule-based, Anthropic, OpenAI)
+- Can work with any copy generator (OpenAI or other providers)
 - Uses domain entities and validation rules
 - Orchestrates business logic without knowing infrastructure details

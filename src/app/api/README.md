@@ -115,7 +115,7 @@ Health check endpoint.
   },
   "config": {
     "deviceTargets": 2,
-    "generatorType": "RuleBasedCopyGenerator"
+    "generatorType": "LLMCopyGeneratorAdapter(openai)"
   }
 }
 ```

@@ -14,7 +14,6 @@ import {
     CopyGenerationInput,
     GeneratedCopy,
   } from '../interfaces/ICopyGenerator';
-  import { RuleBasedCopyGenerator } from './RuleBasedCopyGenerator';
   
   /**
    * LLM provider configuration.
@@ -33,14 +32,12 @@ export interface LLMConfig {
    * MVP: Falls back to rule-based generator if no API key.
    * Future: Implements actual LLM calls.
    */
-  export class LLMCopyGeneratorAdapter implements ICopyGenerator {
-    private fallbackGenerator: RuleBasedCopyGenerator;
-    private config: LLMConfig;
-    
-    constructor(config: LLMConfig) {
-      this.config = config;
-      this.fallbackGenerator = new RuleBasedCopyGenerator();
-    }
+export class LLMCopyGeneratorAdapter implements ICopyGenerator {
+  private config: LLMConfig;
+  
+  constructor(config: LLMConfig) {
+    this.config = config;
+  }
     
     /**
      * Generate copy using LLM (or fallback to rule-based).
@@ -52,41 +49,21 @@ export interface LLMConfig {
     const isAvailable = await this.isAvailable();
     
     if (!isAvailable) {
-        // No API key configured, use fallback
-        const fallbackCopy = await this.fallbackGenerator.generateCopy(input);
-        return {
-          ...fallbackCopy,
-          metadata: {
-            ...fallbackCopy.metadata,
-            fallbackUsed: true,
-          },
-      };
+        throw new Error('OpenAI API key is not configured');
     }
     
-    if (this.config.provider === 'openai') {
-      try {
-        return await this.generateWithOpenAI(input);
-      } catch (error) {
-        console.warn('OpenAI copy generation failed, using fallback.', error);
-      }
+    if (this.config.provider !== 'openai') {
+      throw new Error(`Unsupported LLM provider: ${this.config.provider}`);
     }
     
-    const fallbackCopy = await this.fallbackGenerator.generateCopy(input);
-    return {
-      ...fallbackCopy,
-      metadata: {
-        ...fallbackCopy.metadata,
-        model: `${this.config.provider}-fallback`,
-        fallbackUsed: true,
-      },
-    };
+    return this.generateWithOpenAI(input);
   }
     
     /**
      * Check if LLM is available (API key configured).
      */
   async isAvailable(): Promise<boolean> {
-      return !!this.config.apiKey && this.config.apiKey.length > 0;
+      return this.config.provider === 'openai' && !!this.config.apiKey && this.config.apiKey.length > 0;
   }
     
     /**
