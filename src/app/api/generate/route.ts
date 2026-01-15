@@ -16,7 +16,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { StoryboardGenerator, RuleBasedCopyGenerator } from '@/application/services';
+import { StoryboardGenerator, LLMCopyGeneratorAdapter } from '@/application/services';
 import { DEFAULT_LOCALE, isValidHexColor } from '@/domain';
 
 export async function POST(request: NextRequest) {
@@ -93,7 +93,11 @@ export async function POST(request: NextRequest) {
     }
     
     // Generate storyboard
-    const copyGenerator = new RuleBasedCopyGenerator();
+    const copyGenerator = new LLMCopyGeneratorAdapter({
+      provider: 'openai',
+      apiKey: process.env.OPENAI_API_KEY,
+      model: process.env.OPENAI_MODEL,
+    });
     const storyboardGenerator = new StoryboardGenerator(copyGenerator);
     
     const result = await storyboardGenerator.generate({

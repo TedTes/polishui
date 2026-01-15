@@ -7,7 +7,7 @@
 
 import { NextResponse } from 'next/server';
 import { SharpRenderer } from '@/infrastructure/rendering';
-import { RuleBasedCopyGenerator } from '@/application/services';
+import { LLMCopyGeneratorAdapter } from '@/application/services';
 import { validateTemplateConfiguration, DEVICE_TARGETS } from '@/domain';
 
 export async function GET() {
@@ -21,7 +21,11 @@ export async function GET() {
     const rendererReady = await renderer.isReady();
     
     // Check copy generator
-    const copyGenerator = new RuleBasedCopyGenerator();
+    const copyGenerator = new LLMCopyGeneratorAdapter({
+      provider: 'openai',
+      apiKey: process.env.OPENAI_API_KEY,
+      model: process.env.OPENAI_MODEL,
+    });
     const copyGeneratorReady = await copyGenerator.isAvailable();
     
     // Gather system info

@@ -75,8 +75,10 @@ export class ZipExportService implements IExportService {
     renderedImages: any[]
   ): ExportManifest {
     // Get unique template IDs used
-    const templatesUsed = Array.from(
-      new Set(storyboard.slides.map((s: any) => s.templateId))
+    const templatesUsed: string[] = Array.from(
+      new Set(
+        storyboard.slides.map((s: { templateId: string }) => String(s.templateId))
+      )
     );
     
     // Build target metadata
