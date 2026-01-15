@@ -162,7 +162,7 @@ export async function POST(request: NextRequest) {
     });
 
     const safeName = appName.replace(/[^a-z0-9]/gi, '_').toLowerCase();
-    return new NextResponse(zipBuffer, {
+    return new NextResponse(new Uint8Array(zipBuffer), {
       status: 200,
       headers: {
         'Content-Type': 'application/zip',
