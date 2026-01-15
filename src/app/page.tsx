@@ -32,8 +32,13 @@ export default function Home() {
 
   const handleGenerate = async (data: {
     appName: string;
+    headline?: string;
     valueBullets: string[];
-    brandColor?: string;
+    accentColor?: string;
+    deviceFrameStyle: string;
+    qualityLevel: string;
+    variationsCount: number;
+    customInstructions?: string;
   }) => {
     setIsGenerating(true);
     setError(null);
@@ -44,9 +49,17 @@ export default function Home() {
       const formData = new FormData();
       formData.append('appName', data.appName);
       formData.append('valueBullets', JSON.stringify(data.valueBullets));
-      
-      if (data.brandColor) {
-        formData.append('brandColor', data.brandColor);
+      if (data.headline) {
+        formData.append('headline', data.headline);
+      }
+      if (data.accentColor) {
+        formData.append('accentColor', data.accentColor);
+      }
+      formData.append('deviceFrameStyle', data.deviceFrameStyle);
+      formData.append('qualityLevel', data.qualityLevel);
+      formData.append('variationsCount', String(data.variationsCount));
+      if (data.customInstructions) {
+        formData.append('customInstructions', data.customInstructions);
       }
 
       screenshots.forEach((file) => {

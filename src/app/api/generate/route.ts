@@ -30,6 +30,25 @@ export async function POST(request: NextRequest) {
     const formData = await request.formData();
 
     const appName = (formData.get('appName') as string) || 'app-store';
+    const headline = (formData.get('headline') as string) || '';
+    const valueBulletsJson = formData.get('valueBullets') as string | null;
+    const deviceFrameStyle = (formData.get('deviceFrameStyle') as string) || 'with sleek bezel';
+    const qualityLevel = (formData.get('qualityLevel') as string) || 'high';
+    const variationsCountRaw = formData.get('variationsCount') as string | null;
+    const accentColor = (formData.get('accentColor') as string) || '';
+    const customInstructions = (formData.get('customInstructions') as string) || '';
+    
+    let valueBullets: string[] = [];
+    if (valueBulletsJson) {
+      try {
+        const parsed = JSON.parse(valueBulletsJson);
+        if (Array.isArray(parsed)) {
+          valueBullets = parsed.filter((item) => typeof item === 'string').slice(0, 4);
+        }
+      } catch {
+        valueBullets = [];
+      }
+    }
     
     // Extract screenshots
     const screenshotFiles = formData.getAll('screenshots') as File[];
@@ -48,6 +67,17 @@ export async function POST(request: NextRequest) {
       );
     }
     
+    const bulletList = valueBullets.length > 0
+      ? valueBullets.map((item) => `- ${item}`).join('\n')
+      : '(none)';
+    const headlineText = headline.trim().length > 0
+      ? headline.trim()
+      : 'Infer a short, factual headline from visible UI (no hype).';
+    const variationsCount = Math.min(
+      3,
+      Math.max(1, Number(variationsCountRaw || 3))
+    );
+    
     const basePrompt = [
       'You are an expert App Store screenshot designer creating high-converting, 100% Apple-compliant promotional images (Guideline 2.3 Accurate Metadata, 2026 rules).',
       'Base image to edit: preserve EVERY pixel of the original UI exactly as-is. Do NOT alter, blur, cover, fake, add, remove, or regenerate any in-app element, text, color, layout, icon, or content.',
@@ -58,9 +88,12 @@ export async function POST(request: NextRequest) {
       '- NO hype, NO promises, NO superlatives, NO prices, NO rankings, NO competitors, NO unverifiable claims.',
       '- Use clean sans-serif font, high contrast, subtle glow/shadow for readability at thumbnail size.',
       '- Match the app color theme for headline and bullets.',
-      'Output: Modern iPhone 14/15/16 Pro Max style frame, high resolution (1290x2796), vertical portrait.',
-      'Headline: "Build Strength & Track Progress Daily".',
-      'Bullet points (4 items): Personalized Workout Plans; Daily Streaks & Calendar Tracking; Log Sets, Reps & Exercises; Meal Planning Integration.',
+      `Output: Modern iPhone 14/15/16 Pro Max style frame (${deviceFrameStyle}), high resolution (1290x2796), vertical portrait.`,
+      `Headline: "${headlineText}".`,
+      `Bullet points (${valueBullets.length} items, markdown):\n${bulletList}`,
+      `Variations count: ${variationsCount}.`,
+      `Accent color override: ${accentColor || 'none (match app theme)'}.`,
+      `Extra guidance: ${customInstructions || 'none'}.`,
       'Final output: Ultra-realistic edited images that look like official App Store screenshots - accurate, clean, professional.',
     ].join(' ');
 
@@ -68,7 +101,7 @@ export async function POST(request: NextRequest) {
       { key: 'main', instruction: 'Main version: headline at top, bullets on right.' },
       { key: 'minimal', instruction: 'Minimal version: only headline plus small callouts pointing to UI elements (e.g., arrow to calendar: "Track Streaks").' },
       { key: 'bottom', instruction: 'Bottom-focused version: headline at bottom, bullets on left.' },
-    ];
+    ].slice(0, variationsCount);
 
     const zip = new JSZip();
 
@@ -87,6 +120,9 @@ export async function POST(request: NextRequest) {
         upstream.append('model', imageModel);
         upstream.append('image', file, file.name || `screenshot-${i + 1}.png`);
         upstream.append('prompt', `${basePrompt} ${variant.instruction}`);
+        if (qualityLevel) {
+          upstream.append('quality', qualityLevel);
+        }
 
         const response = await fetch('https://api.openai.com/v1/images/edits', {
           method: 'POST',
