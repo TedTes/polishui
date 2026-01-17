@@ -1,8 +1,12 @@
 'use client';
 
 import { useMemo, useState } from 'react';
+import { Bell, User } from 'lucide-react';
 
-import { OnboardingOverlay, InputForm, UploadSection } from './components';
+import ModernSidebar from './components/ModernSidebar';
+import UploadSection from './components/UploadSection';
+import CompactSettingsPanel from './components/CompactSettingsPanel';
+import EnhancedGenerateButton from './components/EnhancedGenerateButton';
 import { incrementGenerationCount, isLimitReached } from './components/GuestLimitBanner';
 import { ToastProvider, useToast } from './components/ToastProvider';
 
@@ -19,7 +23,6 @@ function HomeContent() {
   const [bullets, setBullets] = useState('');
   const [variationsCount, setVariationsCount] = useState(3);
   const [deviceFrameStyle, setDeviceFrameStyle] = useState('sleek bezel');
-  const [qualityLevel, setQualityLevel] = useState('high');
   const [accentColor, setAccentColor] = useState('#3B82F6');
   const [customInstructions, setCustomInstructions] = useState('');
 
@@ -64,7 +67,7 @@ function HomeContent() {
       formData.append('valueBullets', JSON.stringify(bulletList));
       formData.append('variationsCount', variationsCount.toString());
       formData.append('deviceFrameStyle', deviceFrameStyle);
-      formData.append('qualityLevel', qualityLevel);
+      formData.append('qualityLevel', 'auto');
       formData.append('accentColor', accentColor);
       formData.append('customInstructions', customInstructions);
 
@@ -118,186 +121,103 @@ function HomeContent() {
     }
   };
 
-  const handleRetry = () => {
-    setLoadingState('idle');
-    setErrorMessage('');
-    handleGenerate();
-  };
-
-  const handleSignUpClick = () => {
-    showToast('Sign up feature coming soon!', 'info');
-    // In production: navigate to sign up page or show modal
-  };
-
   return (
     <>
-      <OnboardingOverlay onComplete={() => {}} />
-      
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
-        {/* Header */}
-        <header className="bg-white border-b border-gray-200">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-            <div className="flex items-center justify-between">
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50/30 to-purple-50/30 flex">
+        <ModernSidebar currentPage="dashboard" />
+
+        <div className="flex-1 flex flex-col lg:ml-0">
+          <header className="h-16 bg-white/80 backdrop-blur-xl border-b border-gray-200 sticky top-0 z-40">
+            <div className="h-full px-4 lg:px-8 flex items-center justify-between">
               <div>
-                <h1 className="text-3xl font-bold text-gray-900">
-                  polishui
-                </h1>
-                <p className="mt-2 text-gray-600">
-                  Transform your app screenshots with AI-powered marketing overlays
-                </p>
+                <h1 className="text-xl font-bold text-gray-900">App Store Screenshot Generator</h1>
+                <p className="text-xs text-gray-600 mt-0.5">Create stunning marketing screenshots with AI</p>
               </div>
-              <button
-                onClick={handleSignUpClick}
-                className="hidden md:block px-6 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors"
-              >
-                Sign Up Free
-              </button>
+              <div className="flex items-center gap-3">
+                <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors relative">
+                  <Bell className="w-5 h-5 text-gray-600" />
+                  <span className="absolute top-1 right-1 w-2 h-2 bg-blue-600 rounded-full" />
+                </button>
+                <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
+                  <User className="w-5 h-5 text-gray-600" />
+                </button>
+              </div>
             </div>
-          </div>
-        </header>
+          </header>
 
-        {/* Main Content */}
-        <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-          <div className="grid gap-6 lg:grid-cols-[0.7fr_1.2fr_1fr]">
-            {/* Left Menu */}
-            <section className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
-              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-gray-400">
-                Menu
-              </p>
-              <nav className="mt-4 space-y-2 text-sm font-medium text-gray-700">
-                <button className="flex w-full items-center justify-between rounded-lg bg-blue-50 px-3 py-2 text-blue-700">
-                  Dashboard
-                  <span className="text-xs font-semibold">Current</span>
-                </button>
-                <button className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-gray-600 hover:bg-gray-50">
-                  Projects
-                  <span className="text-xs text-gray-400">Soon</span>
-                </button>
-                <button className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-gray-600 hover:bg-gray-50">
-                  Templates
-                  <span className="text-xs text-gray-400">Soon</span>
-                </button>
-                <button className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-gray-600 hover:bg-gray-50">
-                  Billing
-                  <span className="text-xs text-gray-400">Soon</span>
-                </button>
-              </nav>
-            </section>
-
-            {/* Middle Upload */}
-            <section className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
-              <UploadSection
-                uploadedImages={uploadedImages}
-                onUpload={setUploadedImages}
-              />
-            </section>
-
-            {/* Right Settings */}
-            <section className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
-              <h2 className="text-lg font-semibold text-gray-900">Settings</h2>
-              <p className="mt-1 text-sm text-gray-600">
-                Define the copy and styling for your promotional screenshots.
-              </p>
-              <div className="mt-6">
-                <InputForm
-                  headline={headline}
-                  setHeadline={setHeadline}
-                  bullets={bullets}
-                  setBullets={setBullets}
-                  variationsCount={variationsCount}
-                  setVariationsCount={setVariationsCount}
-                  deviceFrameStyle={deviceFrameStyle}
-                  setDeviceFrameStyle={setDeviceFrameStyle}
-                  qualityLevel={qualityLevel}
-                  setQualityLevel={setQualityLevel}
-                  accentColor={accentColor}
-                  setAccentColor={setAccentColor}
-                  customInstructions={customInstructions}
-                  setCustomInstructions={setCustomInstructions}
-                />
-              </div>
-
-              <button
-                onClick={handleGenerate}
-                disabled={!canGenerate}
-                className={`
-                  mt-6 w-full rounded-lg py-3 text-sm font-semibold transition-all shadow-lg
-                  ${canGenerate
-                    ? 'bg-blue-600 text-white hover:bg-blue-700 hover:shadow-xl transform hover:-translate-y-0.5'
-                    : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                  }
-                `}
-              >
-                {loadingState === 'generating' ? (
-                  <span className="flex items-center justify-center gap-3">
-                    <svg className="animate-spin h-5 w-5" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                    </svg>
-                    Generating... ({progress.current}/{progress.total})
-                  </span>
-                ) : loadingState === 'success' ? (
-                  <span className="flex items-center justify-center gap-3">
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                    </svg>
-                    Download Complete!
-                  </span>
-                ) : (
-                  `Generate ${uploadedImages.length * variationsCount} Screenshot${uploadedImages.length * variationsCount > 1 ? 's' : ''}`
-                )}
-              </button>
-
-              {/* Error Message */}
-              {loadingState === 'error' && (
-                <div className="mt-4 bg-red-50 border border-red-200 rounded-lg p-4 animate-fadeIn">
-                  <div className="flex items-start gap-3">
-                    <svg className="w-5 h-5 text-red-600 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                    <div className="flex-1">
-                      <p className="text-sm font-medium text-red-900">Generation Failed</p>
-                      <p className="text-xs text-red-700 mt-1">{errorMessage}</p>
-                      <button
-                        onClick={handleRetry}
-                        className="mt-3 text-sm font-medium text-red-700 hover:text-red-800 underline"
-                      >
-                        Try Again
-                      </button>
+          <main className="flex-1 overflow-y-auto">
+            <div className="p-4 lg:p-8 pb-24 lg:pb-8">
+              <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+                <div className="lg:col-span-2 xl:col-span-2">
+                  <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
+                    <div className="flex items-center gap-3 mb-6">
+                      <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
+                        <span className="text-white text-xl">📱</span>
+                      </div>
+                      <div>
+                        <h2 className="text-lg font-bold text-gray-900">Upload Screenshots</h2>
+                        <p className="text-sm text-gray-600">Add your app screenshots to get started</p>
+                      </div>
                     </div>
+                    <UploadSection uploadedImages={uploadedImages} onUpload={setUploadedImages} />
                   </div>
                 </div>
-              )}
 
-              {/* Progress Bar */}
-              {loadingState === 'generating' && (
-                <div className="mt-4 bg-white rounded-lg border border-gray-200 p-4 animate-fadeIn">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm font-medium text-gray-700">
-                      Processing screenshot {progress.current} of {progress.total}
-                    </span>
-                    <span className="text-sm text-gray-500">
-                      {Math.round((progress.current / progress.total) * 100)}%
-                    </span>
-                  </div>
-                  <div className="w-full bg-gray-200 rounded-full h-2">
-                    <div
-                      className="bg-blue-600 h-2 rounded-full transition-all duration-500"
-                      style={{ width: `${(progress.current / progress.total) * 100}%` }}
+                <div className="lg:col-span-2 xl:col-span-1 space-y-6">
+                  <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
+                    <CompactSettingsPanel
+                      headline={headline}
+                      setHeadline={setHeadline}
+                      bullets={bullets}
+                      setBullets={setBullets}
+                      variationsCount={variationsCount}
+                      setVariationsCount={setVariationsCount}
+                      deviceFrameStyle={deviceFrameStyle}
+                      setDeviceFrameStyle={setDeviceFrameStyle}
+                      accentColor={accentColor}
+                      setAccentColor={setAccentColor}
+                      customInstructions={customInstructions}
+                      setCustomInstructions={setCustomInstructions}
                     />
                   </div>
-                </div>
-              )}
-            </section>
-          </div>
-        </main>
 
-        {/* Footer */}
-        <footer className="border-t border-gray-200 mt-16">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 text-center text-sm text-gray-600">
-            Powered by OpenAI DALL-E • Apple App Store Guidelines Compliant
-          </div>
-        </footer>
+                  <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
+                    <EnhancedGenerateButton
+                      onClick={handleGenerate}
+                      disabled={!canGenerate}
+                      loadingState={loadingState}
+                      progress={progress}
+                      errorMessage={errorMessage}
+                    />
+                    {!canGenerate && (
+                      <p className="text-sm text-center text-gray-500 mt-4">
+                        Upload at least 1 screenshot to generate
+                      </p>
+                    )}
+                  </div>
+
+                  <div className="bg-gradient-to-br from-blue-50 to-purple-50 rounded-2xl border border-blue-100 p-6">
+                    <h3 className="font-semibold text-gray-900 mb-3">💡 Quick Tips</h3>
+                    <ul className="space-y-2 text-sm text-gray-700">
+                      <li className="flex items-start gap-2">
+                        <span className="text-blue-600 mt-0.5">•</span>
+                        <span>Upload 3-5 screenshots for best results</span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <span className="text-blue-600 mt-0.5">•</span>
+                        <span>Use benefits-focused bullets, not features</span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <span className="text-blue-600 mt-0.5">•</span>
+                        <span>Leave headline empty for AI generation</span>
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </main>
+        </div>
       </div>
     </>
   );
