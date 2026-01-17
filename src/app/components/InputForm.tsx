@@ -1,253 +1,255 @@
 'use client';
 
-import { useState } from 'react';
+import React, { useState } from 'react';
 
 interface InputFormProps {
-  onGenerate: (data: {
-    appName: string;
-    headline?: string;
-    valueBullets: string[];
-    accentColor?: string;
-    deviceFrameStyle: string;
-    qualityLevel: string;
-    variationsCount: number;
-    customInstructions?: string;
-  }) => void;
-  isGenerating: boolean;
+  headline: string;
+  setHeadline: (value: string) => void;
+  bullets: string;
+  setBullets: (value: string) => void;
+  variationsCount: number;
+  setVariationsCount: (value: number) => void;
+  deviceFrameStyle: string;
+  setDeviceFrameStyle: (value: string) => void;
+  qualityLevel: string;
+  setQualityLevel: (value: string) => void;
+  accentColor: string;
+  setAccentColor: (value: string) => void;
+  customInstructions: string;
+  setCustomInstructions: (value: string) => void;
 }
 
-export function InputForm({ onGenerate, isGenerating }: InputFormProps) {
-  const [appName, setAppName] = useState('');
-  const [headline, setHeadline] = useState('');
-  const [bullets, setBullets] = useState(['', '', '']);
-  const [accentColor, setAccentColor] = useState('');
-  const [deviceFrameStyle, setDeviceFrameStyle] = useState('with sleek bezel');
-  const [qualityLevel, setQualityLevel] = useState('high');
-  const [variationsCount, setVariationsCount] = useState(3);
-  const [customInstructions, setCustomInstructions] = useState('');
+export default function InputForm({
+  headline,
+  setHeadline,
+  bullets,
+  setBullets,
+  variationsCount,
+  setVariationsCount,
+  deviceFrameStyle,
+  setDeviceFrameStyle,
+  qualityLevel,
+  setQualityLevel,
+  accentColor,
+  setAccentColor,
+  customInstructions,
+  setCustomInstructions,
+}: InputFormProps) {
+  const [showAdvanced, setShowAdvanced] = useState(false);
+  const [headlineWarning, setHeadlineWarning] = useState('');
 
-  const handleBulletChange = (index: number, value: string) => {
-    const updated = [...bullets];
-    updated[index] = value;
-    setBullets(updated);
-  };
+  // Apple-restricted keywords
+  const restrictedWords = ['best', 'number one', '#1', 'top', 'winner', 'award-winning'];
 
-  const handleAddBullet = () => {
-    if (bullets.length < 6) {
-      setBullets([...bullets, '']);
+  const validateHeadline = (text: string) => {
+    const lowerText = text.toLowerCase();
+    const found = restrictedWords.find(word => lowerText.includes(word));
+    if (found) {
+      setHeadlineWarning(`⚠️ Avoid "${found}" - may violate App Store guidelines`);
+    } else {
+      setHeadlineWarning('');
     }
   };
 
-  const handleRemoveBullet = (index: number) => {
-    if (bullets.length > 3) {
-      setBullets(bullets.filter((_, i) => i !== index));
-    }
+  const handleHeadlineChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setHeadline(value);
+    validateHeadline(value);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    const validBullets = bullets.filter((b) => b.trim().length > 0);
-    
-    if (!appName.trim() || validBullets.length < 3) {
-      return;
-    }
-
-    onGenerate({
-      appName: appName.trim(),
-      headline: headline.trim() || undefined,
-      valueBullets: validBullets,
-      accentColor: accentColor || undefined,
-      deviceFrameStyle,
-      qualityLevel,
-      variationsCount,
-      customInstructions: customInstructions.trim() || undefined,
-    });
-  };
-
-  const validBullets = bullets.filter((b) => b.trim().length > 0);
-  const canSubmit = appName.trim().length > 0;
+  const characterCount = headline.length;
+  const maxChars = 50;
 
   return (
-    <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-6 shadow-[var(--shadow-soft)]">
-      <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--accent)]">
-        Step 2
-      </p>
-      <h2 className="font-display mt-2 text-2xl text-[var(--ink)]">
-        Provide app details
-      </h2>
-
-      <form onSubmit={handleSubmit} className="mt-6 space-y-6">
-        {/* App Name */}
-        <div>
-          <label className="block text-sm font-medium text-[var(--muted)] mb-2">
-            App Name *
-          </label>
-          <input
-            type="text"
-            value={appName}
-            onChange={(e) => setAppName(e.target.value)}
-            placeholder="e.g., MyAwesomeApp"
-            maxLength={50}
-            className="w-full rounded-xl border border-[var(--border)] bg-white px-4 py-2 text-sm text-[var(--ink)] shadow-sm focus:border-[var(--accent)] focus:outline-none focus:ring-2 focus:ring-emerald-200"
-            required
-          />
-        </div>
-
+    <div className="space-y-6">
+      {/* Essential Controls */}
+      <div className="bg-white rounded-lg border border-gray-200 p-6">
+        <h2 className="text-xl font-semibold mb-4">Marketing Copy</h2>
+        
         {/* Headline */}
-        <div>
-          <label className="block text-sm font-medium text-[var(--muted)] mb-2">
-            Headline (optional)
+        <div className="mb-6">
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Headline
+            <span className="text-gray-400 ml-2 text-xs">Optional - AI will generate if empty</span>
           </label>
           <input
             type="text"
             value={headline}
-            onChange={(e) => setHeadline(e.target.value)}
-            placeholder="e.g., Build Momentum, Stay Consistent"
-            maxLength={32}
-            className="w-full rounded-xl border border-[var(--border)] bg-white px-4 py-2 text-sm text-[var(--ink)] shadow-sm focus:border-[var(--accent)] focus:outline-none focus:ring-2 focus:ring-emerald-200"
+            onChange={handleHeadlineChange}
+            placeholder="e.g., Track Your Fitness Journey"
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+            maxLength={maxChars}
           />
-          <p className="mt-2 text-xs text-[var(--muted)]">
-            32 characters max. Leave blank to auto-generate from the UI.
-          </p>
-        </div>
-
-        {/* Value Bullets */}
-        <div>
-          <label className="block text-sm font-medium text-[var(--muted)] mb-2">
-            Value Bullets (optional, shown as overlay points)
-          </label>
-          <div className="space-y-3">
-            {bullets.map((bullet, index) => (
-              <div key={index} className="flex gap-2">
-                <input
-                  type="text"
-                  value={bullet}
-                  onChange={(e) => handleBulletChange(index, e.target.value)}
-                  placeholder={`Feature ${index + 1}`}
-                  className="flex-1 rounded-xl border border-[var(--border)] bg-white px-4 py-2 text-sm text-[var(--ink)] shadow-sm focus:border-[var(--accent)] focus:outline-none focus:ring-2 focus:ring-emerald-200"
-                />
-                {bullets.length > 3 && (
-                  <button
-                    type="button"
-                    onClick={() => handleRemoveBullet(index)}
-                    className="rounded-xl px-3 py-2 text-xs font-semibold text-red-600 transition hover:bg-red-50"
-                  >
-                    Remove
-                  </button>
-                )}
-              </div>
-            ))}
-          </div>
-
-          {bullets.length < 6 && (
-            <button
-              type="button"
-              onClick={handleAddBullet}
-              className="mt-3 text-sm font-semibold text-[var(--accent)] transition hover:text-emerald-700"
-            >
-              + Add another bullet
-            </button>
-          )}
-
-          <p className="mt-2 text-xs text-[var(--muted)]">
-            {validBullets.length}/6 bullets filled
-          </p>
-        </div>
-
-        {/* Accent Color */}
-        <div>
-          <label className="block text-sm font-medium text-[var(--muted)] mb-2">
-            Accent Color (optional)
-          </label>
-          <div className="flex gap-3 items-center">
-            <input
-              type="color"
-              value={accentColor || '#0ea5e9'}
-              onChange={(e) => setAccentColor(e.target.value)}
-              className="h-10 w-20 cursor-pointer rounded-lg border border-[var(--border)]"
-            />
-            <input
-              type="text"
-              value={accentColor}
-              onChange={(e) => setAccentColor(e.target.value)}
-              placeholder="#0ea5e9"
-              pattern="^#[0-9A-Fa-f]{6}$"
-              className="flex-1 rounded-xl border border-[var(--border)] bg-white px-4 py-2 text-sm text-[var(--ink)] shadow-sm focus:border-[var(--accent)] focus:outline-none focus:ring-2 focus:ring-emerald-200"
-            />
+          <div className="flex items-center justify-between mt-2">
+            <div className="text-xs">
+              {headlineWarning && (
+                <span className="text-amber-600">{headlineWarning}</span>
+              )}
+            </div>
+            <span className={`text-xs ${characterCount > maxChars - 10 ? 'text-amber-600' : 'text-gray-500'}`}>
+              {characterCount}/{maxChars}
+            </span>
           </div>
         </div>
 
-        {/* Device Frame Style */}
+        {/* Bullet Points */}
         <div>
-          <label className="block text-sm font-medium text-[var(--muted)] mb-2">
-            Device Frame Style
-          </label>
-          <select
-            value={deviceFrameStyle}
-            onChange={(e) => setDeviceFrameStyle(e.target.value)}
-            className="w-full rounded-xl border border-[var(--border)] bg-white px-4 py-2 text-sm text-[var(--ink)] shadow-sm focus:border-[var(--accent)] focus:outline-none focus:ring-2 focus:ring-emerald-200"
-          >
-            <option value="with sleek bezel">With sleek bezel</option>
-            <option value="minimal/no bezel">Minimal/no bezel</option>
-            <option value="with subtle shadow">With subtle shadow</option>
-          </select>
-        </div>
-
-        {/* Quality Level */}
-        <div>
-          <label className="block text-sm font-medium text-[var(--muted)] mb-2">
-            Quality Level
-          </label>
-          <select
-            value={qualityLevel}
-            onChange={(e) => setQualityLevel(e.target.value)}
-            className="w-full rounded-xl border border-[var(--border)] bg-white px-4 py-2 text-sm text-[var(--ink)] shadow-sm focus:border-[var(--accent)] focus:outline-none focus:ring-2 focus:ring-emerald-200"
-          >
-            <option value="medium">Medium</option>
-            <option value="high">High</option>
-          </select>
-        </div>
-
-        {/* Variations Count */}
-        <div>
-          <label className="block text-sm font-medium text-[var(--muted)] mb-2">
-            Variations Count
-          </label>
-          <select
-            value={variationsCount}
-            onChange={(e) => setVariationsCount(Number(e.target.value))}
-            className="w-full rounded-xl border border-[var(--border)] bg-white px-4 py-2 text-sm text-[var(--ink)] shadow-sm focus:border-[var(--accent)] focus:outline-none focus:ring-2 focus:ring-emerald-200"
-          >
-            <option value={1}>1</option>
-            <option value={2}>2</option>
-            <option value={3}>3</option>
-          </select>
-        </div>
-
-        {/* Custom Instructions */}
-        <div>
-          <label className="block text-sm font-medium text-[var(--muted)] mb-2">
-            Custom Instructions (optional)
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Value Bullets
+            <span className="text-gray-400 ml-2 text-xs">Optional - one per line</span>
           </label>
           <textarea
-            value={customInstructions}
-            onChange={(e) => setCustomInstructions(e.target.value)}
-            placeholder="Optional guidance for layout or emphasis."
-            rows={3}
-            className="w-full rounded-xl border border-[var(--border)] bg-white px-4 py-2 text-sm text-[var(--ink)] shadow-sm focus:border-[var(--accent)] focus:outline-none focus:ring-2 focus:ring-emerald-200"
+            value={bullets}
+            onChange={(e) => setBullets(e.target.value)}
+            placeholder="Real-time workout tracking&#10;Personalized meal plans&#10;Progress analytics"
+            rows={4}
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all resize-none"
           />
+          <p className="mt-2 text-xs text-gray-500">
+            💡 Tip: Focus on user benefits, not features
+          </p>
         </div>
+      </div>
 
-        {/* Submit */}
+      {/* Quick Style Controls */}
+      <div className="bg-white rounded-lg border border-gray-200 p-6">
+        <h2 className="text-xl font-semibold mb-4">Style</h2>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* Variations Count */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Variations per Screenshot
+            </label>
+            <select
+              value={variationsCount}
+              onChange={(e) => setVariationsCount(Number(e.target.value))}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            >
+              <option value={1}>1 (Fast)</option>
+              <option value={2}>2</option>
+              <option value={3}>3 (Recommended)</option>
+              <option value={4}>4</option>
+              <option value={5}>5 (Maximum)</option>
+            </select>
+          </div>
+
+          {/* Device Frame Style */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Device Frame
+            </label>
+            <select
+              value={deviceFrameStyle}
+              onChange={(e) => setDeviceFrameStyle(e.target.value)}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            >
+              <option value="sleek bezel">Sleek Bezel (Modern)</option>
+              <option value="minimal">Minimal</option>
+              <option value="subtle shadow">Subtle Shadow</option>
+              <option value="none">None</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      {/* Advanced Options (Collapsible) */}
+      <div className="bg-white rounded-lg border border-gray-200">
         <button
-          type="submit"
-          disabled={!canSubmit || isGenerating}
-          className="w-full rounded-full bg-[var(--accent)] px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-emerald-200/60 transition hover:-translate-y-0.5 hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-50 disabled:shadow-none"
+          onClick={() => setShowAdvanced(!showAdvanced)}
+          className="w-full px-6 py-4 flex items-center justify-between text-left hover:bg-gray-50 transition-colors rounded-lg"
         >
-          {isGenerating ? 'Generating...' : 'Generate Screenshots'}
+          <span className="text-lg font-semibold">Advanced Options</span>
+          <svg
+            className={`w-5 h-5 text-gray-500 transition-transform ${showAdvanced ? 'rotate-180' : ''}`}
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+          </svg>
         </button>
-      </form>
+
+        {showAdvanced && (
+          <div className="px-6 pb-6 space-y-4 border-t border-gray-100 pt-4">
+            {/* Quality Level */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Generation Quality
+                <span className="text-gray-400 ml-2 text-xs">Affects cost</span>
+              </label>
+              <div className="grid grid-cols-4 gap-3">
+                {(['low', 'medium', 'high', 'auto'] as const).map((quality) => (
+                  <button
+                    key={quality}
+                    onClick={() => setQualityLevel(quality)}
+                    className={`px-4 py-2 rounded-lg border-2 transition-all ${
+                      qualityLevel === quality
+                        ? 'border-blue-500 bg-blue-50 text-blue-700 font-medium'
+                        : 'border-gray-200 hover:border-gray-300'
+                    }`}
+                  >
+                    {quality.charAt(0).toUpperCase() + quality.slice(1)}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Accent Color */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Accent Color
+                <span className="text-gray-400 ml-2 text-xs">Optional override</span>
+              </label>
+              <div className="flex gap-3">
+                <input
+                  type="color"
+                  value={accentColor}
+                  onChange={(e) => setAccentColor(e.target.value)}
+                  className="h-10 w-20 rounded border border-gray-300 cursor-pointer"
+                />
+                <input
+                  type="text"
+                  value={accentColor}
+                  onChange={(e) => setAccentColor(e.target.value)}
+                  placeholder="#3B82F6"
+                  className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent font-mono text-sm"
+                />
+              </div>
+            </div>
+
+            {/* Custom Instructions */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Custom Instructions
+                <span className="text-gray-400 ml-2 text-xs">Extra guidance for AI</span>
+              </label>
+              <textarea
+                value={customInstructions}
+                onChange={(e) => setCustomInstructions(e.target.value)}
+                placeholder="e.g., Emphasize the workout tracking feature, use energetic colors"
+                rows={3}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+              />
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Cost Estimate */}
+      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+        <div className="flex items-start gap-3">
+          <svg className="w-5 h-5 text-blue-600 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          <div className="flex-1">
+            <p className="text-sm font-medium text-blue-900">Estimated Cost</p>
+            <p className="text-xs text-blue-700 mt-1">
+              {variationsCount} variation(s) × {qualityLevel} quality
+            </p>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

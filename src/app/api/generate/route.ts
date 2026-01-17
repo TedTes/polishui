@@ -14,6 +14,49 @@
 import { NextRequest, NextResponse } from 'next/server';
 import JSZip from 'jszip';
 
+function buildEditsUrl(baseUrl: string): string {
+  return baseUrl.trim();
+}
+
+async function editImage(params: {
+  apiKey: string;
+  baseUrl: string;
+  model: string;
+  quality?: string;
+  image: File;
+  prompt: string;
+}): Promise<Buffer> {
+  const { apiKey, baseUrl, model, quality, image, prompt } = params;
+  const url = buildEditsUrl(baseUrl);
+  const upstream = new FormData();
+  upstream.append('model', model);
+  upstream.append('image', image, image.name || 'screenshot.png');
+  upstream.append('prompt', prompt);
+  if (quality) {
+    upstream.append('quality', quality);
+  }
+  
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+    },
+    body: upstream,
+  });
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(`Image provider error ${response.status}: ${errorText}`);
+  }
+
+  const data = await response.json();
+  const b64 = data?.data?.[0]?.b64_json;
+  if (!b64 || typeof b64 !== 'string') {
+    throw new Error('Image provider response missing image data');
+  }
+
+  return Buffer.from(b64, 'base64');
+}
+
 export async function POST(request: NextRequest) {
   try {
     const apiKey = process.env.OPENAI_API_KEY;
@@ -23,8 +66,14 @@ export async function POST(request: NextRequest) {
         { status: 500 }
       );
     }
-
     const imageModel = process.env.OPENAI_IMAGE_MODEL || 'gpt-image-1';
+    const baseUrl = process.env.OPENAI_IMAGE_BASE_URL || 'https://api.openai.com/v1/images/edits';
+    // if (provider !== 'openai' && provider !== 'openai-compatible') {
+    //   return NextResponse.json(
+    //     { error: `Unsupported image provider: ${provider}` },
+    //     { status: 400 }
+    //   );
+    // }
 
     // Parse FormData
     const formData = await request.formData();
@@ -116,40 +165,30 @@ export async function POST(request: NextRequest) {
       }
 
       for (const variant of variants) {
-        const upstream = new FormData();
-        upstream.append('model', imageModel);
-        upstream.append('image', file, file.name || `screenshot-${i + 1}.png`);
-        upstream.append('prompt', `${basePrompt} ${variant.instruction}`);
-        if (qualityLevel) {
-          upstream.append('quality', qualityLevel);
-        }
+        const normalizedQuality = (() => {
+          switch (qualityLevel) {
+            case 'standard':
+              return 'medium';
+            case 'hd':
+              return 'high';
+            case 'low':
+            case 'medium':
+            case 'high':
+            case 'auto':
+              return qualityLevel;
+            default:
+              return 'auto';
+          }
+        })();
 
-        const response = await fetch('https://api.openai.com/v1/images/edits', {
-          method: 'POST',
-          headers: {
-            Authorization: `Bearer ${apiKey}`,
-          },
-          body: upstream,
+        const buffer = await editImage({
+          apiKey,
+          baseUrl,
+          model: imageModel,
+          quality: normalizedQuality,
+          image: file,
+          prompt: `${basePrompt} ${variant.instruction}`,
         });
-
-        if (!response.ok) {
-          const errorText = await response.text();
-          return NextResponse.json(
-            { error: `OpenAI error ${response.status}: ${errorText}` },
-            { status: 502 }
-          );
-        }
-
-        const data = await response.json();
-        const b64 = data?.data?.[0]?.b64_json;
-        if (!b64 || typeof b64 !== 'string') {
-          return NextResponse.json(
-            { error: 'OpenAI response missing image data' },
-            { status: 502 }
-          );
-        }
-
-        const buffer = Buffer.from(b64, 'base64');
         const fileIndex = String(i + 1).padStart(2, '0');
         zip.file(`screenshot-${fileIndex}-${variant.key}.png`, buffer);
       }

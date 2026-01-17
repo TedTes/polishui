@@ -1,139 +1,193 @@
 'use client';
 
-import { useCallback, useEffect, useMemo } from 'react';
+import React, { useState } from 'react';
 
 interface UploadSectionProps {
-  screenshots: File[];
-  onAddScreenshots: (files: File[]) => void;
-  onScreenshotsChange: (files: File[]) => void;
+  uploadedImages: File[];
+  onUpload: (files: File[]) => void;
 }
 
-// Generate stable key for each file
-const fileKey = (file: File) => `${file.name}-${file.size}-${file.lastModified}`;
+export default function UploadSection({ uploadedImages, onUpload }: UploadSectionProps) {
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragCounter, setDragCounter] = useState(0);
 
-export function UploadSection({
-  screenshots,
-  onAddScreenshots,
-  onScreenshotsChange,
-}: UploadSectionProps) {
-  // Create preview URLs once per file change
-  const previews = useMemo(() => {
-    return screenshots.map((file) => ({
-      key: fileKey(file),
-      file,
-      url: URL.createObjectURL(file),
-    }));
-  }, [screenshots]);
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) {
+      const filesArray = Array.from(e.target.files).filter(file => 
+        file.type.startsWith('image/')
+      );
+      if (filesArray.length + uploadedImages.length > 10) {
+        alert('Maximum 10 images allowed');
+        return;
+      }
+      onUpload([...uploadedImages, ...filesArray]);
+    }
+  };
 
-  // Cleanup: revoke all blob URLs when component unmounts or previews change
-  useEffect(() => {
-    return () => {
-      previews.forEach((p) => URL.revokeObjectURL(p.url));
-    };
-  }, [previews]);
+  const handleDragEnter = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragCounter(prev => prev + 1);
+    if (e.dataTransfer.items && e.dataTransfer.items.length > 0) {
+      setIsDragging(true);
+    }
+  };
 
-  const handleFileChange = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
-      
-      const files = Array.from(e.target.files || []);
-      
-      const imageFiles = files.filter((file) => file.type.startsWith('image/'));
+  const handleDragLeave = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragCounter(prev => prev - 1);
+    if (dragCounter - 1 === 0) {
+      setIsDragging(false);
+    }
+  };
 
-      onAddScreenshots(imageFiles);
-     
-      
-      e.target.value = '';
-    },
-    [onAddScreenshots]
-  );
-  const handleRemoveScreenshot = (index: number) => {
-    const updated = screenshots.filter((_, i) => i !== index);
-    onScreenshotsChange(updated);
+  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+  };
+
+  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+    setDragCounter(0);
+
+    const files = Array.from(e.dataTransfer.files).filter(file => 
+      file.type.startsWith('image/')
+    );
+    
+    if (files.length + uploadedImages.length > 10) {
+      alert('Maximum 10 images allowed');
+      return;
+    }
+
+    if (files.length > 0) {
+      onUpload([...uploadedImages, ...files]);
+    }
+  };
+
+  const handleRemoveImage = (index: number) => {
+    const newImages = uploadedImages.filter((_, i) => i !== index);
+    onUpload(newImages);
+  };
+
+  const handleClearAll = () => {
+    if (window.confirm('Remove all uploaded screenshots?')) {
+      onUpload([]);
+    }
   };
 
   return (
-    <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-6 shadow-[var(--shadow-soft)]">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--accent)]">
-            Step 1
+    <div className="mb-8">
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="text-xl font-semibold">Upload Screenshots</h2>
+        {uploadedImages.length > 0 && (
+          <button
+            onClick={handleClearAll}
+            className="text-sm text-red-600 hover:text-red-700 transition-colors"
+          >
+            Clear All
+          </button>
+        )}
+      </div>
+
+      {/* Drag-drop zone */}
+      <div
+        onDragEnter={handleDragEnter}
+        onDragLeave={handleDragLeave}
+        onDragOver={handleDragOver}
+        onDrop={handleDrop}
+        className={`
+          relative border-2 border-dashed rounded-lg p-8 text-center transition-all
+          ${isDragging 
+            ? 'border-blue-500 bg-blue-50' 
+            : 'border-gray-300 bg-gray-50 hover:border-gray-400'
+          }
+        `}
+      >
+        <input
+          type="file"
+          accept="image/*"
+          multiple
+          onChange={handleFileChange}
+          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+          id="file-upload"
+        />
+        
+        <div className="pointer-events-none">
+          <svg
+            className={`mx-auto h-12 w-12 mb-4 transition-colors ${
+              isDragging ? 'text-blue-500' : 'text-gray-400'
+            }`}
+            stroke="currentColor"
+            fill="none"
+            viewBox="0 0 48 48"
+            aria-hidden="true"
+          >
+            <path
+              d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02"
+              strokeWidth={2}
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+          <p className={`text-sm mb-2 ${isDragging ? 'text-blue-600 font-medium' : 'text-gray-600'}`}>
+            {isDragging ? 'Drop images here' : 'Drag & drop screenshots, or click to browse'}
           </p>
-          <h2 className="font-display mt-2 text-2xl text-[var(--ink)]">
-            Upload screenshots
-          </h2>
+          <p className="text-xs text-gray-500">
+            PNG, JPG, WEBP • 1-10 images • Max 10MB each
+          </p>
         </div>
-        <span className="rounded-full border border-[var(--border)] bg-[var(--surface-muted)] px-3 py-1 text-xs font-medium text-[var(--muted)]">
-          {screenshots.length}/10 uploaded
-        </span>
       </div>
 
-      <p className="mt-3 text-sm text-[var(--muted)]">
-        Add 1-10 PNG or JPG screens. We'll use them to generate promo variations.
-      </p>
+      {/* Uploaded images counter and validation */}
+      {uploadedImages.length > 0 && (
+        <div className="mt-4 flex items-center justify-between text-sm">
+          <p className="text-gray-700">
+            <span className="font-semibold">{uploadedImages.length}</span> of 10 images uploaded
+          </p>
+          {uploadedImages.length === 10 && (
+            <p className="text-amber-600 text-xs">Maximum reached</p>
+          )}
+        </div>
+      )}
 
-      <div className="mt-5">
-        <label className="group flex w-full cursor-pointer items-center justify-center rounded-2xl border border-dashed border-[var(--border)] bg-[var(--surface-muted)] px-6 py-10 transition hover:border-[var(--accent)] hover:bg-white">
-          <div className="text-center">
-            <svg
-              className="mx-auto h-10 w-10 text-[var(--muted)] transition group-hover:text-[var(--accent)]"
-              stroke="currentColor"
-              fill="none"
-              viewBox="0 0 48 48"
-              aria-hidden="true"
-            >
-              <path
-                d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02"
-                strokeWidth={2}
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-            <p className="mt-3 text-sm font-medium text-[var(--ink)]">
-              Click to upload or drag and drop
-            </p>
-            <p className="mt-1 text-xs text-[var(--muted)]">
-              Up to 10 files, 10MB max each
-            </p>
-          </div>
-          <input
-            type="file"
-            className="hidden"
-            accept="image/*"
-            multiple
-            onChange={handleFileChange}
-          />
-        </label>
-      </div>
-
-      {screenshots.length > 0 && (
+      {/* Thumbnail grid */}
+      {uploadedImages.length > 0 && (
         <div className="mt-6">
-          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
-            {previews.map((preview, index) => (
-              <div key={preview.key} className="group relative">
+          <h3 className="text-sm font-medium text-gray-700 mb-3">Uploaded Screenshots</h3>
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+            {uploadedImages.map((file, index) => (
+              <div
+                key={`${file.name}-${index}`}
+                className="relative group aspect-[9/16] bg-gray-100 rounded-lg overflow-hidden border border-gray-200 hover:border-gray-300 transition-all"
+              >
                 <img
-                  src={preview.url}
+                  src={URL.createObjectURL(file)}
                   alt={`Screenshot ${index + 1}`}
-                  className="h-32 w-full rounded-xl border border-[var(--border)] object-cover shadow-sm"
+                  className="w-full h-full object-cover"
                 />
+                
+                {/* Remove button overlay */}
                 <button
-                  onClick={() => handleRemoveScreenshot(index)}
-                  className="absolute right-2 top-2 flex h-6 w-6 items-center justify-center rounded-full bg-red-500 text-xs font-semibold text-white opacity-0 transition-opacity group-hover:opacity-100"
+                  onClick={() => handleRemoveImage(index)}
+                  className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1.5 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-600 focus:opacity-100 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
+                  aria-label={`Remove screenshot ${index + 1}`}
                 >
-                  x
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
                 </button>
-                <div className="absolute bottom-2 left-2 rounded-full bg-black/60 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-white">
-                  #{index + 1}
+
+                {/* Image index badge */}
+                <div className="absolute bottom-2 left-2 bg-black/60 text-white text-xs px-2 py-1 rounded">
+                  {index + 1}
                 </div>
               </div>
             ))}
           </div>
         </div>
-      )}
-
-      {screenshots.length === 0 && (
-        <p className="mt-4 text-sm font-medium text-amber-700">
-          Please upload at least 1 screenshot to begin.
-        </p>
       )}
     </div>
   );
